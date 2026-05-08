@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.pyo
+*.pyt
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+ENV/
+env/
+
+# FastAPI / secrets
+.env
+.env.*
+**/.env
+
+# Node / Frontend
+node_modules/
+dist/
+build/
+.vite/
+.next/
+.nuxt/
+out/
+coverage/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+
+# Docker
+pgdata/
+
+# OS
+.DS_Store
+
+# Data
+*.csv
+*.tsv
+*.parquet
+
+# Local task tracking
+TODO.md
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# JetBrains
+.idea/
+
+# Misc
+.DS_Store?
