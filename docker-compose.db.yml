@@ -11,5 +11,20 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_HOST=db
+      - CSV_PATH=/app/customer_spending_1M_2018_2025.csv
+      - GEMINI_MODEL=${GEMINI_MODEL}
+    volumes:
+      - ./:/app
+    depends_on:
+      - db
+
 volumes:
   pgdata:

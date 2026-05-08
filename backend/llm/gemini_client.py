@@ -10,10 +10,9 @@ load_dotenv()
 
 
 def _getenv(name: str, default: str = "") -> str:
-    val = os.getenv(name, default)
-    if not val and name != "GEMINI_MODEL":
-        raise RuntimeError(f"Missing env var: {name}")
-    return val
+    # For non-chat tasks (e.g., DB seeding), Gemini may be unavailable.
+    # Gemini is required only when /chat is called.
+    return os.getenv(name, default)
 
 
 GEMINI_API_KEY = _getenv("GEMINI_API_KEY", "")

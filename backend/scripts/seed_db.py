@@ -75,22 +75,35 @@ def parse_amount(x):
 
 
 def parse_datetime(x):
+    """
+    Returns a Python datetime (or None) so asyncpg can bind TIMESTAMPTZ safely.
+    """
     if x is None:
         return None
     x = str(x).strip()
     if not x or x.lower() in {"nan", "none"}:
         return None
 
-    # Try common formats; fall back to NULL.
-    for fmt in ("%Y-%m-%d", "%Y/%m/%d", "%d-%m-%Y", "%m/%d/%Y"):
+    # Common formats seen in CSVs (date-only, ISO, etc.)
+    formats = (
+        "%Y-%m-%d",
+        "%Y/%m/%d",
+        "%d-%m-%Y",
+        "%m/%d/%Y",
+        "%Y-%m-%dT%H:%M:%S.%f",
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%d %H:%M:%S.%f",
+        "%Y-%m-%d %H:%M:%S",
+    )
+    for fmt in formats:
         try:
-            dt = datetime.strptime(x, fmt)
-            return dt.isoformat()
+            return datetime.strptime(x, fmt)
         except Exception:
             pass
+
+    # Final fallback: try datetime.fromisoformat
     try:
-        # Let Postgres parse if possible
-        return x
+        return datetime.fromisoformat(x)
     except Exception:
         return None
 
