@@ -53,3 +53,14 @@ Response:
   "chart_suggested": false,
   "chart_type": "bar"
 }
+```
+
+## Tests
+Backend unit/route tests use `pytest`.
+
+```bash
+cd backend
+pip install -r requirements.txt
+pytest
+```
+
