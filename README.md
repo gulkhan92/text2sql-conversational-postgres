@@ -58,9 +58,17 @@ Response:
 ## Tests
 Backend unit/route tests use `pytest`.
 
+Test coverage focuses on:
+- `backend/db/query_executor.py`: SELECT-only + forbidden keyword guardrails and statement_timeout
+- `backend/llm/gemini_client.py`: `strip_sql()` parsing and prompt construction
+- `backend/db/schema_cache.py`: TTL fresh vs stale refresh logic
+- `backend/routes/chat.py`: `/chat` behavior for empty input, happy path, and error path (with mocks)
+- `backend/routes/schema.py`: `/schema` uses cache and always closes the DB connection (with mocks)
+
 ```bash
 cd backend
 pip install -r requirements.txt
 pytest
 ```
+
 
