@@ -4,7 +4,7 @@ Natural-language-to-SQL chatbot for an e-commerce dataset.
 
 - Frontend: React 18 + Vite + TypeScript + Recharts
 - Backend: FastAPI (Python 3.11+) + asyncpg (PostgreSQL)
-- LLM: Google Gemini (Gemini API) for NL→SQL + answer(retrieved data) nalaysis & summarization
+- LLM: Google Gemini (Gemini API) for NL→SQL + answer(retrieved data) analysis & summarization
 - DB: PostgreSQL 15+
 
 ## Quickstart (local)
