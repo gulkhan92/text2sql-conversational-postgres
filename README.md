@@ -55,8 +55,21 @@ Response:
 }
 ```
 
+## Flow diagram
+
+```mermaid
+flowchart TD
+  U[User question] --> A[POST /chat]
+  A --> S[SchemaCache /schema introspection]
+  S --> L1[Gemini generate_sql]
+  L1 --> Q[execute_readonly_select (guardrails + statement_timeout)]
+  Q --> R[Gemini summarize_results]
+  R --> Resp[Response JSON: answer/sql/data/chart_suggested]
+```
+
 ## Tests
 Backend unit/route tests use `pytest`.
+
 
 Test coverage focuses on:
 - `backend/db/query_executor.py`: SELECT-only + forbidden keyword guardrails and statement_timeout
