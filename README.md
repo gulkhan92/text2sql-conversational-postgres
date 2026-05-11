@@ -65,6 +65,7 @@ flowchart TD
   L1 --> Q[execute_readonly_select (guardrails + statement_timeout)]
   Q --> R[Gemini summarize_results]
   R --> Resp[Response JSON: answer/sql/data/chart_suggested]
+
 ```
 
 ## Tests
