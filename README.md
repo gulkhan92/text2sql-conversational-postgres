@@ -62,11 +62,11 @@ flowchart TD
   U[User question] --> A[POST /chat]
   A --> S[SchemaCache /schema introspection]
   S --> L1[Gemini generate_sql]
-  L1 --> Q[execute_readonly_select (guardrails + statement_timeout)]
+  L1 --> Q[execute_readonly_select]
   Q --> R[Gemini summarize_results]
-  R --> Resp[Response JSON: answer/sql/data/chart_suggested]
-
+  R --> Resp[Response JSON]
 ```
+
 
 ## Tests
 Backend unit/route tests use `pytest`.
