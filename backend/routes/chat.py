@@ -7,6 +7,8 @@ from backend.db.connection import create_connection
 from backend.db.query_executor import execute_readonly_select
 from backend.db.schema_cache import SchemaCache
 from backend.llm.gemini_client import generate_sql, get_client, summarize_results
+from backend.security.auth import get_current_role
+from backend.security.rbac_config import ROLE_ACCESS
 
 router = APIRouter()
 
@@ -27,7 +29,7 @@ def _maybe_chart_suggestion(rows: list[Dict[str, Any]]) -> tuple[bool, str]:
 
 
 @router.post("/chat")
-async def chat(req: ChatRequest):
+async def chat(req: ChatRequest, role: str = get_current_role()):
     question = (req.message or "").strip()
     if not question:
         return {
@@ -41,6 +43,26 @@ async def chat(req: ChatRequest):
     conn = await create_connection()
     try:
         schema_context = await _cache.get(conn)
+        # Role-aware schema shaping: prevent Gemini from seeing disallowed columns/tables.
+        role_access = ROLE_ACCESS.get(role)
+        if role_access:
+            allowed_cols = role_access.columns
+            allowed_tables = role_access.tables
+            schema_context = {
+                "tables": [
+                    {
+                        "name": t["name"],
+                        "columns": [
+                            c
+                            for c in t["columns"]
+                            if t["name"] in allowed_tables
+                            and c["name"] in allowed_cols.get(t["name"], set())
+                        ],
+                    }
+                    for t in schema_context.get("tables", [])
+                    if t.get("name") in allowed_tables
+                ]
+            }
 
         client = get_client()
         sql = await generate_sql(
@@ -50,7 +72,7 @@ async def chat(req: ChatRequest):
         )
 
         # Execute SQL (read-only + statement_timeout)
-        data = await execute_readonly_select(conn, sql, statement_timeout_ms=30_000)
+        data = await execute_readonly_select(conn, sql, role=role, statement_timeout_ms=30_000)
 
         # Summarize
         answer = await summarize_results(
