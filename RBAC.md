@@ -118,13 +118,79 @@ Continue to keep:
 
 ---
 
-## 5) What each role is allowed to access (summary table)
+## 5) Exact DB table/column accessibility by role
 
-| Role | /schema | /chat | DB access approach |
-|------|----------|-------|---------------------|
-| Admin | Allowed (full or near-full) | Allowed | Base tables + all analytics views |
-| Staff | Allowed (sanitized) | Allowed for aggregated/non-sensitive | Allowed analytics views only |
-| Customer | Usually minimal/sanitized | Allowed for safe aggregated questions only | Customer-safe analytics views only |
+> Dataset tables come from `backend/scripts/seed_db.py` and exist in `public` schema:
+> - `public.locations(id, state_names)`
+> - `public.customers(id, gender, age, marital_status, segment, employees_status, payment_method, referral)`
+> - `public.transactions(id, transaction_id, transaction_date, customer_id, location_id, amount_spent)`
+>
+> **Important:** This backend currently executes LLM-generated SQL without per-role filtering. The table below defines the intended permissions that must be enforced via **SQL allowlisting + DB GRANT/RLS**.
+
+### Admin
+- `public.locations`
+  - `id` ✅
+  - `state_names` ✅
+- `public.customers`
+  - `id` ✅
+  - `gender` ✅
+  - `age` ✅
+  - `marital_status` ✅
+  - `segment` ✅
+  - `employees_status` ✅
+  - `payment_method` ✅
+  - `referral` ✅
+- `public.transactions`
+  - `id` ✅
+  - `transaction_id` ✅
+  - `transaction_date` ✅
+  - `customer_id` ✅
+  - `location_id` ✅
+  - `amount_spent` ✅
+
+### Staff
+- `public.locations`
+  - `id` ❌
+  - `state_names` ✅ *(dimension for aggregates only)*
+- `public.customers`
+  - `id` ❌
+  - `gender` ✅
+  - `age` ✅
+  - `marital_status` ❌
+  - `segment` ✅
+  - `employees_status` ✅
+  - `payment_method` ✅
+  - `referral` ❌
+- `public.transactions`
+  - `id` ❌
+  - `transaction_id` ❌
+  - `transaction_date` ✅ *(aggregated/time-bucket only)*
+  - `customer_id` ❌
+  - `location_id` ❌
+  - `amount_spent` ✅
+
+### Customer (end user)
+- `public.locations`
+  - `id` ❌
+  - `state_names` ✅ *(aggregate dimension only)*
+- `public.customers`
+  - `id` ❌
+  - `gender` ✅ *(aggregate only)*
+  - `age` ✅ *(bucketed/aggregate only)*
+  - `marital_status` ❌
+  - `segment` ❌
+  - `employees_status` ❌
+  - `payment_method` ✅ *(aggregate only)*
+  - `referral` ❌
+- `public.transactions`
+  - `id` ❌
+  - `transaction_id` ❌
+  - `transaction_date` ❌
+  - `customer_id` ❌
+  - `location_id` ❌
+  - `amount_spent` ✅ *(aggregate only)*
+
+---
 
 ---
 
