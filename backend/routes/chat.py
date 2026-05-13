@@ -92,6 +92,17 @@ async def chat(req: ChatRequest, role: str = get_current_role()):
             "chart_type": chart_type,
         }
     except Exception as e:
+        # If the RBAC SQL allowlisting blocks the query, return a role-appropriate message.
+        err = str(e)
+        if "not allowed" in err or "Role '" in err or "allowed" in err:
+            return {
+                "answer": "You don't have access to the requested data for your role.",
+                "sql": "",
+                "data": [],
+                "chart_suggested": False,
+                "chart_type": "table",
+            }
+
         return {
             "answer": f"Failed to answer the question: {e}",
             "sql": "",
