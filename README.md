@@ -68,16 +68,30 @@ flowchart TD
 ```
 
 
+## RBAC (Admin / Staff / Customer)
+The backend implements a defense-in-depth approach for role-based access.
+
+- Authentication: `POST /chat` and `GET /schema` derive the caller role from the Bearer token via `backend/security/auth.py`.
+- RBAC allowlisting (schema + SQL):
+  - Role-specific allowed tables/columns are defined in `backend/security/rbac_config.py`.
+  - `/schema` returns a role-sanitized schema (only tables/columns allowed for that role).
+  - `/chat` shapes the schema sent to Gemini based on the same allowlist.
+  - `backend/db/query_executor.py::execute_readonly_select()` enforces conservative SQL allowlisting before executing.
+- User experience on blocked access:
+  - If the generated SQL is blocked by RBAC, `/chat` returns: `You don't have access to the requested data for your role.`
+
+Detailed intended permissions are documented in `RBAC.md`.
+
 ## Tests
 Backend unit/route tests use `pytest`.
-
 
 Test coverage focuses on:
 - `backend/db/query_executor.py`: SELECT-only + forbidden keyword guardrails and statement_timeout
 - `backend/llm/gemini_client.py`: `strip_sql()` parsing and prompt construction
 - `backend/db/schema_cache.py`: TTL fresh vs stale refresh logic
-- `backend/routes/chat.py`: `/chat` behavior for empty input, happy path, and error path (with mocks)
+- `backend/routes/chat.py`: `/chat` behavior for empty input, happy path, and error path (with mocks), including RBAC-blocked access messaging
 - `backend/routes/schema.py`: `/schema` uses cache and always closes the DB connection (with mocks)
+
 
 ```bash
 cd backend
