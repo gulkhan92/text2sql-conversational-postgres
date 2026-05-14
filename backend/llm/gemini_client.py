@@ -21,6 +21,8 @@ GEMINI_MODEL = _getenv("GEMINI_MODEL", "gemini-1.5-flash")
 
 def build_sql_system_prompt(schema_context: Dict[str, Any]) -> str:
     schema_context_str = schema_context.get("schema_prompt", "") or str(schema_context)
+    error_hint = schema_context.get("error_hint", "") or ""
+
     return (
         "You are an expert PostgreSQL analyst. "
         "Given the schema below, write a single, valid PostgreSQL SELECT query to answer the user's question. "

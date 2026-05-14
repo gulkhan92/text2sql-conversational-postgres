@@ -72,7 +72,7 @@ flowchart TD
 The backend implements a defense-in-depth approach for role-based access.
 
 - Authentication: `POST /chat` and `GET /schema` derive the caller role from the Bearer token via `backend/security/auth.py`.
-- RBAC allowlisting (schema + SQL):
+- RBAC allow listing (schema + SQL):
   - Role-specific allowed tables/columns are defined in `backend/security/rbac_config.py`.
   - `/schema` returns a role-sanitized schema (only tables/columns allowed for that role).
   - `/chat` shapes the schema sent to Gemini based on the same allowlist.

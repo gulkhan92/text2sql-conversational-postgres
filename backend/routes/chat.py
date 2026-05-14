@@ -65,14 +65,46 @@ async def chat(req: ChatRequest, role: str = get_current_role()):
             }
 
         client = get_client()
-        sql = await generate_sql(
-            client,
-            schema_context={"schema_prompt": str(schema_context)},
-            question=question,
-        )
 
-        # Execute SQL (read-only + statement_timeout)
-        data = await execute_readonly_select(conn, sql, role=role, statement_timeout_ms=30_000)
+        # Generate SQL + fallback loop on execution errors.
+        # If the LLM produces invalid SQL (or it's blocked by RBAC),
+        # feed the error back and ask for a corrected query.
+        last_err: Exception | None = None
+        sql: str = ""
+        data: list[Dict[str, Any]] = []
+
+        for _ in range(3):
+            sql = await generate_sql(
+                client,
+                schema_context={"schema_prompt": str(schema_context), "error_hint": ""},
+                question=question,
+            )
+
+            try:
+                data = await execute_readonly_select(
+                    conn,
+                    sql,
+                    role=role,
+                    statement_timeout_ms=30_000,
+                )
+                break
+            except Exception as e:
+                last_err = e
+                # If RBAC denies the query, do not keep retrying.
+                err_str = str(e).lower()
+                if "not allowed" in err_str or "role '" in err_str or "forbidden" in err_str:
+                    raise
+
+                # Provide error feedback to LLM on next iteration.
+                schema_context = {
+                    "tables": schema_context.get("tables", []),
+                    "error_hint": str(e),
+                }
+
+        else:
+            # Ran out of retries
+            raise last_err or RuntimeError("Failed to generate an executable SQL query.")
+
 
         # Summarize
         answer = await summarize_results(
