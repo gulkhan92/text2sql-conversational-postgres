@@ -61,8 +61,11 @@ Response:
 flowchart TD
   U[User question] --> A[POST /chat]
 
-  A --> S[SchemaCache / schema introspection]
-  S --> G0[Gemini generate_sql]
+  A --> R0[Auth: derive role]
+  R0 --> S[SchemaCache / schema introspection]
+  S --> R1[RBAC schema allowlist]
+  R1 --> G0[Gemini generate_sql]
+
 
   G0 --> Q[execute_readonly_select]
   Q --> S{SQL exec ok?}
