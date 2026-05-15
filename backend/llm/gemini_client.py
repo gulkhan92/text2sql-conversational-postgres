@@ -23,11 +23,20 @@ def build_sql_system_prompt(schema_context: Dict[str, Any]) -> str:
     schema_context_str = schema_context.get("schema_prompt", "") or str(schema_context)
     error_hint = schema_context.get("error_hint", "") or ""
 
+    extra = ""
+    if error_hint:
+        extra = (
+            "\nPrevious SQL execution error (if any): "
+            f"{error_hint}\n"
+            "If there was an error, correct the SQL accordingly."
+        )
+
     return (
         "You are an expert PostgreSQL analyst. "
         "Given the schema below, write a single, valid PostgreSQL SELECT query to answer the user's question. "
         "Return ONLY the SQL code. Do not write explanations.\n\n"
         f"Schema:\n{schema_context_str}\n"
+        f"{extra}"
     )
 
 
@@ -89,3 +98,4 @@ async def summarize_results(
 
 def get_client() -> genai.Client:
     return genai.Client(api_key=GEMINI_API_KEY)
+
