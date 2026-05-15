@@ -60,12 +60,24 @@ Response:
 ```mermaid
 flowchart TD
   U[User question] --> A[POST /chat]
-  A --> S[SchemaCache /schema introspection]
-  S --> L1[Gemini generate_sql]
-  L1 --> Q[execute_readonly_select]
-  Q --> R[Gemini summarize_results]
+
+  A --> S[SchemaCache / schema introspection]
+  S --> G0[Gemini generate_sql]
+
+  G0 --> Q[execute_readonly_select]
+  Q -->|success| R[Gemini summarize_results]
   R --> Resp[Response JSON]
+
+  Q -->|failure (invalid SQL / execution error)| E[Feed error back as error_hint]
+  E --> G1[Gemini regenerate corrected SQL]
+  G1 --> Q2[execute_readonly_select]
+
+  Q2 -->|success| R2[Gemini summarize_results]
+  R2 --> Resp2[Response JSON]
+
+  Q2 -->|failure (after retries)| F[Return failure response]
 ```
+
 
 
 ## RBAC (Admin / Staff / Customer)
