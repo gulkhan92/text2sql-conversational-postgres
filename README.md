@@ -80,7 +80,12 @@ The backend implements a defense-in-depth approach for role-based access.
 - User experience on blocked access:
   - If the generated SQL is blocked by RBAC, `/chat` returns: `You don't have access to the requested data for your role.`
 
+- Fallback / repair loop for invalid SQL:
+  - If Gemini generates SQL that fails to execute (e.g., syntax/semantic errors), `/chat` retries (up to 3 times) by passing the execution error back into the SQL-generation prompt so Gemini can regenerate a corrected query.
+  - RBAC-denied queries do **not** get retried; they immediately return the role-based “no access” response.
+
 Detailed intended permissions are documented in `RBAC.md`.
+
 
 ## Tests
 Backend unit/route tests use `pytest`.
