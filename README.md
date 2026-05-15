@@ -68,8 +68,9 @@ flowchart TD
 
 
   G0 --> Q[execute_readonly_select]
-  Q --> S{SQL exec ok?}
+  Q --> S{RBAC & SQL exec ok?}
   S -->|yes| R[Gemini summarize_results]
+
   R --> Resp[Response JSON]
 
   S -->|no| E[Feed error back as error_hint]
