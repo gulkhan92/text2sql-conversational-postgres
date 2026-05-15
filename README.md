@@ -68,9 +68,10 @@ flowchart TD
   Q -->|success| R[Gemini summarize_results]
   R --> Resp[Response JSON]
 
-  Q -->|failure (invalid SQL / execution error)| E[Feed error back as error_hint]
+  Q -->|failure| E[Feed error back as error_hint]
   E --> G1[Gemini regenerate corrected SQL]
   G1 --> Q2[execute_readonly_select]
+
 
   Q2 -->|success| R2[Gemini summarize_results]
   R2 --> Resp2[Response JSON]
