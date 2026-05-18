@@ -21,7 +21,7 @@ cp .env.example .env
 docker compose -f docker-compose.db.yml up -d
 ```
 
-### 3) Seed database
+### 3) Seed database (One time)
 ```bash
 docker compose -f docker-compose.db.yml run --rm backend python -m backend.scripts.seed_db
 ```
