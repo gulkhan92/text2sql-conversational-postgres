@@ -8,6 +8,9 @@ from backend.db.query_executor import execute_readonly_select
 from backend.db.schema_cache import SchemaCache
 from backend.llm.gemini_client import generate_sql, get_client, summarize_results
 from backend.security.auth import get_current_role
+
+from fastapi import Depends
+
 from backend.security.rbac_config import ROLE_ACCESS
 
 router = APIRouter()
@@ -29,7 +32,12 @@ def _maybe_chart_suggestion(rows: list[Dict[str, Any]]) -> tuple[bool, str]:
 
 
 @router.post("/chat")
-async def chat(req: ChatRequest, role: str = get_current_role()):
+async def chat(
+    req: ChatRequest,
+    role: str = Depends(get_current_role),
+):
+
+
     question = (req.message or "").strip()
     if not question:
         return {

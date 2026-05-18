@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+
 
 from backend.db.connection import create_connection
 from backend.db.schema_cache import SchemaCache
@@ -12,7 +13,8 @@ _cache = SchemaCache(ttl_seconds=300)
 
 
 @router.get("/schema")
-async def schema(role: str = get_current_role()):
+async def schema(role: str = Depends(get_current_role)):
+
     conn = await create_connection()
     try:
         schema_context = await _cache.get(conn)
