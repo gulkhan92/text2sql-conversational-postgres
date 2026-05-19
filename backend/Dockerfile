@@ -2,7 +2,7 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/app:/app/..
 
 # Install deps first for better caching
 COPY requirements.txt /app/requirements.txt
