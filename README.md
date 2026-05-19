@@ -1,6 +1,6 @@
 # text2sql-conversational-postgres
 
-Natural-language-to-SQL chatbot for an e-commerce dataset.
+Natural-language-to-SQL chatbot for an e-commerce dataset (Gemini NL→SQL + read-only execution + RBAC + conversational UX).
 
 - Frontend: React 18 + Vite + TypeScript + Recharts
 - Backend: FastAPI (Python 3.11+) + asyncpg (PostgreSQL)
@@ -8,6 +8,10 @@ Natural-language-to-SQL chatbot for an e-commerce dataset.
 - DB: PostgreSQL 15+
 
 ## Quickstart (local)
+
+Notes:
+- Backend must be reachable for `/chat` to work.
+- Frontend is the chat UI (professional “business” layout with panels for Conversation, SQL, and Results).
 
 ### 1) Configure environment
 Copy `.env.example` to `.env` and set `GEMINI_API_KEY`.
@@ -55,7 +59,7 @@ Response:
 }
 ```
 
-## Flow diagram
+## Flow diagram (request lifecycle)
 
 ```mermaid
 flowchart TD
