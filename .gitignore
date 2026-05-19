@@ -11,6 +11,9 @@ __pycache__/
 venv/
 ENV/
 env/
+.venv312/
+.venv312_py12/
+
 
 # FastAPI / secrets
 .env
