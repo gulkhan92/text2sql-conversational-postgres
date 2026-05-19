@@ -51,7 +51,7 @@ Request:
 Response:
 ```json
 {
-  "answer": "....",
+  "answer": "...",
   "sql": "SELECT ...",
   "data": [],
   "chart_suggested": false,
