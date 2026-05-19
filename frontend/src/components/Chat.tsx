@@ -47,12 +47,22 @@ function TableView({ data }: { data: ChatRow[] }) {
   }, [data]);
 
   return (
-    <div style={{ overflowX: "auto", border: "1px solid #e5e7eb", borderRadius: 8 }}>
-      <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 520 }}>
-        <thead style={{ background: "#f8fafc" }}>
+    <div style={{ overflowX: "auto", border: "1px solid rgba(15,23,42,0.08)", borderRadius: 12 }}>
+      <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0, minWidth: 520 }}>
+        <thead style={{ background: "rgba(248,250,252,0.85)" }}>
           <tr>
             {columns.map((c: string) => (
-              <th key={c} style={{ textAlign: "left", padding: 8, borderBottom: "1px solid #e5e7eb" }}>
+              <th
+                key={c}
+                style={{
+                  textAlign: "left",
+                  padding: "10px 12px",
+                  borderBottom: "1px solid rgba(15,23,42,0.08)",
+                  fontSize: 12,
+                  color: "#334155",
+                  fontWeight: 700,
+                }}
+              >
                 {c}
               </th>
             ))}
@@ -60,9 +70,17 @@ function TableView({ data }: { data: ChatRow[] }) {
         </thead>
         <tbody>
           {data.map((row, idx) => (
-            <tr key={idx}>
+            <tr key={idx} style={{ background: idx % 2 === 1 ? "rgba(248,250,252,0.75)" : "transparent" }}>
               {columns.map((c: string) => (
-                <td key={c} style={{ padding: 8, borderBottom: "1px solid #f1f5f9" }}>
+                <td
+                  key={c}
+                  style={{
+                    padding: "10px 12px",
+                    borderBottom: "1px solid rgba(15,23,42,0.06)",
+                    fontSize: 13,
+                    color: "#0f172a",
+                  }}
+                >
                   {row?.[c] === null || row?.[c] === undefined ? "" : String(row[c])}
                 </td>
               ))}
@@ -83,8 +101,9 @@ function ChartView({ data, chartType }: { data: ChatRow[]; chartType: ChartType 
   const xKey = keys[0];
   const yKey = keys[1] ?? keys[0];
 
+  const seriesColor = "#2563eb";
+
   if (chartType === "pie" && keys.length >= 2) {
-    // pie expects numeric "value" and "name"
     const pieData = data.slice(0, 8).map((r, i) => ({
       name: String(r[xKey] ?? i),
       value: Number(r[yKey] ?? 0),
@@ -94,7 +113,7 @@ function ChartView({ data, chartType }: { data: ChatRow[]; chartType: ChartType 
         <PieChart>
           <Pie data={pieData} dataKey="value" nameKey="name" outerRadius={100} label>
             {pieData.map((_, idx) => (
-              <Cell key={idx} />
+              <Cell key={idx} fill={idx % 2 === 0 ? seriesColor : "#16a34a"} />
             ))}
           </Pie>
           <Tooltip />
@@ -115,7 +134,7 @@ function ChartView({ data, chartType }: { data: ChatRow[]; chartType: ChartType 
           <XAxis dataKey="x" />
           <YAxis />
           <Tooltip />
-          <Line type="monotone" dataKey="y" stroke="#3b82f6" />
+          <Line type="monotone" dataKey="y" stroke={seriesColor} strokeWidth={2} dot={false} />
         </LineChart>
       </ResponsiveContainer>
     );
@@ -133,13 +152,12 @@ function ChartView({ data, chartType }: { data: ChatRow[]; chartType: ChartType 
           <XAxis dataKey="x" />
           <YAxis />
           <Tooltip />
-          <Bar dataKey="y" fill="#2563eb" />
+          <Bar dataKey="y" fill={seriesColor} radius={[8, 8, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     );
   }
 
-  // default table
   return <TableView data={data} />;
 }
 
@@ -161,7 +179,12 @@ export default function Chat({
     const msg = input.trim();
     if (!msg) return;
 
-    onMessagesChange([...messages, { role: "user", content: msg }]);
+    const nextUserMessages = [...messages, { role: "user", content: msg }] as {
+      role: "user" | "assistant";
+      content: string;
+    }[];
+    onMessagesChange(nextUserMessages);
+
     setInput("");
     setLoading(true);
 
@@ -173,15 +196,13 @@ export default function Chat({
       setChartType(resp.chart_type || "bar");
 
       onMessagesChange([
-        ...messages,
-        { role: "user", content: msg },
+        ...nextUserMessages,
         { role: "assistant", content: resp.answer || "" },
       ]);
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Request failed";
       onMessagesChange([
-        ...messages,
-        { role: "user", content: msg },
+        ...nextUserMessages,
         { role: "assistant", content: message },
       ]);
       setLastSql("");
@@ -194,68 +215,153 @@ export default function Chat({
   }
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
-      <div style={{ border: "1px solid #e5e7eb", borderRadius: 12, padding: 12, minHeight: 320, background: "#fff" }}>
-        <div style={{ display: "grid", gap: 10 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "minmax(420px, 1fr) 380px", gap: 14, alignItems: "start" }}>
+      <div style={{ border: "1px solid rgba(15,23,42,0.08)", borderRadius: 16, background: "rgba(255,255,255,0.78)", boxShadow: "0 10px 30px rgba(2, 6, 23, 0.06)" }}>
+        <div style={{ padding: 14, borderBottom: "1px solid rgba(15,23,42,0.08)" }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", letterSpacing: 0.2 }}>Conversation</div>
+          <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>Ask analytics questions; the backend will generate, validate, and execute a read-only SELECT.</div>
+        </div>
+
+        <div style={{ padding: 14, minHeight: 360 }}>
           {messages.length === 0 ? (
-            <div style={{ color: "#6b7280" }}>Ask a question about the customer spending dataset.</div>
-          ) : (
-            messages.map((m, idx) => (
-              <div key={idx} style={{ background: m.role === "user" ? "#eff6ff" : "#f8fafc", border: "1px solid #e5e7eb", borderRadius: 10, padding: 10 }}>
-                <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>{m.role.toUpperCase()}</div>
-                <div style={{ whiteSpace: "pre-wrap" }}>{m.content}</div>
+            <div style={{ color: "#64748b", fontSize: 14, lineHeight: 1.6 }}>
+              Ask a question about the customer spending dataset.
+              <div style={{ marginTop: 10, fontSize: 12, color: "#94a3b8" }}>
+                Examples: “average amount spent by marital status”, “top states by spending”, “spending trend by age”.
               </div>
-            ))
+            </div>
+          ) : (
+            <div style={{ display: "grid", gap: 10 }}>
+              {messages.map((m, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    background: m.role === "user" ? "rgba(37,99,235,0.09)" : "rgba(248,250,252,0.9)",
+                    border: "1px solid rgba(15,23,42,0.08)",
+                    borderRadius: 14,
+                    padding: 12,
+                  }}
+                >
+                  <div style={{ fontSize: 12, color: "#475569", fontWeight: 800, marginBottom: 6 }}>
+                    {m.role === "user" ? "USER" : "ASSISTANT"}
+                  </div>
+                  <div style={{ whiteSpace: "pre-wrap", fontSize: 14, color: "#0f172a", lineHeight: 1.55 }}>
+                    {m.content}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
+        </div>
+
+        <div style={{ padding: 14, borderTop: "1px solid rgba(15,23,42,0.08)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
+            <input
+              value={input}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
+              placeholder="e.g., average amount spent by marital status"
+              style={{
+                padding: "12px 12px",
+                borderRadius: 12,
+                border: "1px solid rgba(15,23,42,0.10)",
+                background: "rgba(255,255,255,0.95)",
+                outline: "none",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.7)",
+                color: "#0f172a",
+                fontSize: 14,
+              }}
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === "Enter" && !e.shiftKey) send();
+              }}
+            />
+
+            <button
+              onClick={send}
+              disabled={loading}
+              style={{
+                padding: "12px 16px",
+                borderRadius: 12,
+                border: "1px solid rgba(37,99,235,0.35)",
+                background: loading ? "rgba(37,99,235,0.45)" : "linear-gradient(135deg, rgba(37,99,235,1) 0%, rgba(59,130,246,0.92) 60%, rgba(16,185,129,0.78) 120%)",
+                color: "white",
+                cursor: "pointer",
+                fontWeight: 900,
+                letterSpacing: 0.2,
+                boxShadow: loading ? "none" : "0 14px 26px rgba(37,99,235,0.22)",
+              }}
+            >
+              {loading ? "Thinking…" : "Send"}
+            </button>
+          </div>
         </div>
       </div>
 
-      <div style={{ display: "grid", gap: 8 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
-          <input
-            value={input}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
-            placeholder="e.g., average amount spent by gender"
-            style={{ padding: 10, borderRadius: 10, border: "1px solid #e5e7eb" }}
-            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
-              if (e.key === "Enter" && !e.shiftKey) send();
-            }}
-          />
-          <button
-            onClick={send}
-            disabled={loading}
-            style={{ padding: "10px 14px", borderRadius: 10, border: "1px solid #2563eb", background: "#2563eb", color: "white", cursor: "pointer" }}
-          >
-            {loading ? "Thinking..." : "Send"}
-          </button>
+      <div style={{ display: "grid", gap: 12 }}>
+        <div style={{ border: "1px solid rgba(15,23,42,0.08)", borderRadius: 16, background: "rgba(255,255,255,0.78)", boxShadow: "0 10px 30px rgba(2, 6, 23, 0.06)" }}>
+          <div style={{ padding: 14, borderBottom: "1px solid rgba(15,23,42,0.08)" }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: "#0f172a", letterSpacing: 0.2 }}>SQL & Results</div>
+            <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>
+              Read-only execution with RBAC allowlisting.
+            </div>
+          </div>
+
+          <div style={{ padding: 14 }}>
+            {lastSql ? (
+              <details>
+                <summary style={{ cursor: "pointer", color: "#2563eb", fontWeight: 800 }}>
+                  SQL
+                </summary>
+                <pre
+                  style={{
+                    whiteSpace: "pre-wrap",
+                    background: "#0b1220",
+                    color: "#e5e7eb",
+                    padding: 12,
+                    borderRadius: 12,
+                    overflowX: "auto",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    marginTop: 10,
+                    fontSize: 12,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {lastSql}
+                </pre>
+              </details>
+            ) : (
+              <div style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.6 }}>
+                Run a query to see the generated SQL and result preview here.
+              </div>
+            )}
+
+            {lastData && lastData.length > 0 ? (
+              <div style={{ marginTop: 14 }}>
+                {chartSuggested ? (
+                  <>
+                    <div style={{ fontSize: 12, color: "#64748b", fontWeight: 800, marginBottom: 8 }}>
+                      Chart preview · {chartType}
+                    </div>
+                    <div style={{ border: "1px solid rgba(15,23,42,0.08)", borderRadius: 14, padding: 10, background: "rgba(248,250,252,0.7)" }}>
+                      <ChartView data={lastData} chartType={chartType} />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: 12, color: "#64748b", fontWeight: 800, marginBottom: 8 }}>Result table</div>
+                    <TableView data={lastData} />
+                  </>
+                )}
+              </div>
+            ) : null}
+          </div>
         </div>
 
-        {lastSql ? (
-          <details>
-            <summary style={{ cursor: "pointer", color: "#2563eb" }}>SQL</summary>
-            <pre style={{ whiteSpace: "pre-wrap", background: "#0b1220", color: "#e5e7eb", padding: 12, borderRadius: 10, overflowX: "auto" }}>
-              {lastSql}
-            </pre>
-          </details>
-        ) : null}
-
-        {lastData && lastData.length > 0 ? (
-          <div style={{ marginTop: 8 }}>
-            {chartSuggested ? (
-              <>
-                <div style={{ fontSize: 12, color: "#64748b", marginBottom: 6 }}>
-                  Chart: {chartType}
-                </div>
-                <ChartView data={lastData} chartType={chartType} />
-              </>
-            ) : (
-              <>
-                <div style={{ fontSize: 12, color: "#64748b", marginBottom: 6 }}>Result table</div>
-                <TableView data={lastData} />
-              </>
-            )}
+        <div style={{ border: "1px dashed rgba(15,23,42,0.18)", borderRadius: 16, padding: 14, background: "rgba(248,250,252,0.55)" }}>
+          <div style={{ fontSize: 12, fontWeight: 900, color: "#0f172a" }}>Tip</div>
+          <div style={{ fontSize: 13, color: "#475569", marginTop: 6, lineHeight: 1.6 }}>
+            Ask for aggregated insights (group-by, averages, top-N). If your role is restricted, the backend will return a role-based “no access” message.
           </div>
-        ) : null}
+        </div>
       </div>
     </div>
   );

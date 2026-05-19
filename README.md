@@ -61,28 +61,27 @@ Response:
 flowchart TD
   U[User question] --> A[POST /chat]
 
-  A --> R0[Auth: derive role]
-  R0 --> S[SchemaCache / schema introspection]
-  S --> R1[RBAC schema allowlist]
+  A --> R0[Auth: derive role (get_current_role)]
+  R0 --> C[SchemaCache: fetch schema]
+  C --> R1[Role-based schema sanitization]
   R1 --> G0[Gemini generate_sql]
 
+  G0 --> Q[execute_readonly_select(conn, sql, role)]
 
-  G0 --> Q[execute_readonly_select]
-  Q --> S{RBAC & SQL exec ok?}
-  S -->|yes| R[Gemini summarize_results]
+  Q --> OK{RBAC + SELECT allowlisting ok?}
+  OK -->|yes| SUM[Gemini summarize_results]
+  SUM --> Resp[Response JSON]
 
-  R --> Resp[Response JSON]
+  OK -->|no| E[Return role-based "no access" response]
 
-  S -->|no| E[Feed error back as error_hint]
+  Q -->|exec error| ERR[Retry up to 3:
+feed exception string as error_hint]
+  ERR --> G1[Gemini regenerate corrected SQL]
+  G1 --> Q2[execute_readonly_select(conn, sql, role)]
 
-  E --> G1[Gemini regenerate corrected SQL]
-  G1 --> Q2[execute_readonly_select]
-
-
-  Q2 -->|success| R2[Gemini summarize_results]
-  R2 --> Resp2[Response JSON]
-
-  Q2 -->|failure| F[Return failure response]
+  Q2 -->|success| SUM2[Gemini summarize_results]
+  SUM2 --> Resp2[Response JSON]
+  Q2 -->|failure| F[Return failed-to-answer response]
 
 ```
 
