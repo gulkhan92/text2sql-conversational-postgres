@@ -1,6 +1,6 @@
 # text2sql-conversational-postgres
 
-Natural-language-to-SQL chatbot for an e-commerce dataset (Gemini NL→SQL + read-only execution + RBAC + conversational UX).
+Natural-language-to-SQL chatbot for an e-commerce dataset—combining Gemini NL→SQL, safe read-only query execution, and role-based access control (RBAC) with a conversational UX.
 
 - Frontend: React 18 + Vite + TypeScript + Recharts
 - Backend: FastAPI (Python 3.11+) + asyncpg (PostgreSQL)
