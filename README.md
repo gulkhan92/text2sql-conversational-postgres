@@ -11,6 +11,8 @@ Natural-language-to-SQL chatbot for an e-commerce dataset (Gemini NL→SQL + rea
 
 Note: If GitHub’s contributions graph lags after pushing, wait a few minutes and ensure the commit is pushed to the same tracked branch (`main`).
 
+(Recent test commit)
+
 Notes:
 - Backend must be reachable for `/chat` to work.
 - Frontend is the chat UI (professional “business” layout with panels for Conversation, SQL, and Results).
