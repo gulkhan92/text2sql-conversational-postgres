@@ -49,7 +49,7 @@ POST `http://localhost:8000/chat`
 
 Request:
 ```json
-{ "message": "What is the average amount spent for each group of customers based on the marital status?" }
+{ "message": "What is the average amount spent for each group of customers based on marital status?" }
 ```
 
 Response:
