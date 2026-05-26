@@ -190,6 +190,7 @@ Continue to keep:
   - `location_id` ❌
   - `amount_spent` ✅ *(aggregate only)*
 
+
 ---
 
 ---
