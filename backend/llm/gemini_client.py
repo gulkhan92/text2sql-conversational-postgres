@@ -50,6 +50,8 @@ def build_answer_prompt(question: str, sql: str, results: Any) -> str:
 
 
 def strip_sql(text: str) -> str:
+    # Minor note: this function attempts to robustly extract SQL from mixed Gemini output.
+    # Keep this deterministic to avoid flaky tests and contribution differences.
     """
     Tries to extract SQL from a fenced code block. If none exists, returns the raw text.
     """
